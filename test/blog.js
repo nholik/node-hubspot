@@ -1,14 +1,36 @@
 const { expect } = require('chai')
-// const fakeHubspotApi = require('./helpers/fake_hubspot_api')
+const fakeHubspotApi = require('./helpers/fake_hubspot_api')
 const Hubspot = require('..')
 
-// const userId = process.env.USER_ID || 23456
-// const applicationId = process.env.APPLICATION_ID || 12345
+const mockBlogDatum = {
+  id: 6513512292,
+}
 
 describe('blogs', function() {
   const hubspot = new Hubspot({
     accessToken: process.env.ACCESS_TOKEN || 'some-fake-token',
   })
+
+  if (process.env.NOCK_OFF) {
+    const allBlogEndpoint = {
+      path: '/content/api/v2/blogs/',
+      response: {
+        limit: 20,
+        objects: [mockBlogDatum],
+        offset: 0,
+        total: 1,
+        total_count: 1,
+      },
+    }
+    const blogByIdEndpoint = {
+      path: '/content/api/v2/blogs/' + mockBlogDatum.id,
+      response: mockBlogDatum,
+    }
+    fakeHubspotApi.setupServer({
+      getEndpoints: [allBlogEndpoint, blogByIdEndpoint],
+    })
+  }
+
   describe('get', () => {
     it('Should get the first set of blogs', () => {
       return hubspot.blogs.get().then(data => {
