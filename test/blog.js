@@ -6,14 +6,14 @@ const mockBlogDatum = {
   id: 6513512292,
 }
 
-describe('blogs', function () {
+describe('blogs', function() {
   const hubspot = new Hubspot({
-    accessToken: process.env.ACCESS_TOKEN || 'some-fake-token',
+    accessToken: process.env.ACCESS_TOKEN || 'fake-token',
   })
 
-  if (process.env.NOCK_OFF) {
+  describe('get', () => {
     const allBlogEndpoint = {
-      path: '/content/api/v2/blogs/',
+      path: '/content/api/v2/blogs',
       response: {
         limit: 20,
         objects: [mockBlogDatum],
@@ -22,16 +22,11 @@ describe('blogs', function () {
         total_count: 1,
       },
     }
-    const blogByIdEndpoint = {
-      path: '/content/api/v2/blogs/' + mockBlogDatum.id,
-      response: mockBlogDatum,
-    }
-    fakeHubspotApi.setupServer({
-      getEndpoints: [allBlogEndpoint, blogByIdEndpoint],
-    })
-  }
 
-  describe('get', () => {
+    fakeHubspotApi.setupServer({
+      getEndpoints: [allBlogEndpoint],
+    })
+
     it('Should get the first set of blogs', () => {
       return hubspot.blogs.get().then(data => {
         expect(data.objects).to.be.a('array')
@@ -41,14 +36,17 @@ describe('blogs', function () {
   })
 
   describe('getById', () => {
-    let blogId
-    before(function() {
-      return hubspot.blogs.get().then(data => (blogId = data.objects[0].id))
+    const blogByIdEndpoint = {
+      path: '/content/api/v2/blogs/' + mockBlogDatum.id,
+      response: mockBlogDatum,
+    }
+    fakeHubspotApi.setupServer({
+      getEndpoints: [blogByIdEndpoint],
     })
     it('Should return a specific blog', () => {
-      return hubspot.blogs.getById(blogId).then(data => {
+      return hubspot.blogs.getById(mockBlogDatum.id).then(data => {
         expect(data).to.be.an('object')
-        expect(data.id).to.be.equal(blogId)
+        expect(data.id).to.be.equal(mockBlogDatum.id)
       })
     })
   })

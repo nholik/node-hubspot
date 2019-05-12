@@ -18,7 +18,7 @@ describe('blog comments', function() {
     let commentId
 
     before(function() {
-      if (process.env.NOCK_OFF) {
+      if (!process.env.NOCK_OFF) {
         return hubspot.blogs.comments
           .get({ limit: 1 })
           .then(data => (commentId = data.objects[0].id))
